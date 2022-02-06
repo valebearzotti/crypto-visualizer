@@ -2,46 +2,85 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios'
 import styled from 'styled-components'
 import '../styles.css'
+import LineChart from '../components/LineChart';
 
 function Home() {
 
-    const [data, setData] = useState([])
     const [listOfValues, setListOfValues] = useState([])
-    const [display, setDisplay] = useState(false)
+    const [every, setEvery] = useState(0);
 
-    useEffect(() => {
-        axios.get('https://api.exchange.coinbase.com/products/ETH-USD/candles?start=2022-01-24T06:00:00&end=2022-01-24T12:00:00&granularity=3600').then((res) => {
-            setData(res.data)
+    const loadRecentData = () => {
+        var end = new Date().toISOString().split('.')[0]
+        const d = new Date();
+        d.setHours(d.getHours() - 12)
+        var start = d.toISOString().split('.')[0]
+        console.log(start + ' ' + end)
+        axios.get(`https://api.exchange.coinbase.com/products/ETH-USD/candles?start=${start}&end=${end}&granularity=300`).then((res) => {
             res.data.map((e, index)=>{
+                var t = new Date(e[0] * 1000).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true});
                 let obj = {
                     id: index + 1,
-                    time: e[0],
+                    time: t,
                     lowest: e[1],
                     highest: e[2]
                 }
                 setListOfValues(l => [...l, obj])
+            return true;
             })
         })
-    }, []);
+    }
+    
+    const reloadRecentData = () => {
+        setListOfValues([]);
+        loadRecentData();
+    }
 
+    useEffect(() => {
+      loadRecentData()
+    }, []);
 
     return (
         <Container>
-            <Button onClick={() => setDisplay(true)}>Load data</Button>
-            {display ? listOfValues.map(e =>
-                <h1>{e.highest}</h1>
-            ) : null}
+            {/*<Button onClick={loadRecentData}>Load data up to 12 hours ago</Button>*/}
+            <ChartContainer>
+                {every!== 0 ? <LineChart dataset={listOfValues} every={every}></LineChart> : null}
+            </ChartContainer>
+            <Dashboard>
+                <Option onClick={()=> setEvery(1)}>Every 5 minutes</Option>
+                <Option onClick={()=> setEvery(2)}>Every 10 minutes</Option>
+                <Option onClick={()=> setEvery(6)}>Every 30 minutes</Option>
+                <Option onClick={reloadRecentData}>Reload data</Option>
+            </Dashboard>
         </Container>
       );
 }
 
 const Container = styled.div`
     display: flex;
-    flex-direction: column;
-    h1{
-        margin-left: auto;
-        margin-right: auto;
-    }
+    flex-direction: row;
+    height: 100vh;
+`
+
+const Dashboard = styled.div`
+    padding: 20px;
+    margin: auto;
+`
+
+const Option = styled.button`
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #4287f5;
+    color: #fff;
+    border-radius: 30px;
+    width: fit-content;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+`
+
+const ChartContainer = styled.div`
+    margin-top: auto;
+    margin-bottom: auto;
 `
 
 const Button = styled.button`
