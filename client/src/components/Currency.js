@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios'
 import styled from 'styled-components'
 import '../styles.css'
-import LineChart from '../components/LineChart';
+import LineChart from './LineChart';
 
-function Home() {
-
+function Currency({coin}) {
     const [listOfValues, setListOfValues] = useState([])
     const [every, setEvery] = useState(0);
 
@@ -14,8 +13,7 @@ function Home() {
         const d = new Date();
         d.setHours(d.getHours() - 12)
         var start = d.toISOString().split('.')[0]
-        console.log(start + ' ' + end)
-        axios.get(`https://api.exchange.coinbase.com/products/ETH-USD/candles?start=${start}&end=${end}&granularity=300`).then((res) => {
+        axios.get(`https://api.exchange.coinbase.com/products/${coin}-USD/candles?start=${start}&end=${end}&granularity=300`).then((res) => {
             res.data.map((e, index)=>{
                 var t = new Date(e[0] * 1000).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true});
                 let obj = {
@@ -43,7 +41,7 @@ function Home() {
         <Container>
             {/*<Button onClick={loadRecentData}>Load data up to 12 hours ago</Button>*/}
             <ChartContainer>
-                {every!== 0 ? <LineChart dataset={listOfValues} every={every}></LineChart> : null}
+                {every!== 0 ? <LineChart dataset={listOfValues} every={every} coin={coin}></LineChart> : null}
             </ChartContainer>
             <Dashboard>
                 <Option onClick={()=> setEvery(1)}>Every 5 minutes</Option>
@@ -98,4 +96,4 @@ const Button = styled.button`
     cursor: pointer;
 `
 
-export default Home;
+export default Currency;

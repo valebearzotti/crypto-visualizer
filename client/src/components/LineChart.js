@@ -23,7 +23,7 @@ ChartJS.register(
 );
 
 
-function LineChart({dataset, every}) {
+function LineChart({dataset, every, coin}) {
 
   const highest = dataset.map(e => e.highest).reverse();
   const lowest = dataset.map(e => e.lowest).reverse();
@@ -38,7 +38,7 @@ function LineChart({dataset, every}) {
       },
       title: {
         display: true,
-        text: 'ETH/USD',
+        text: `${coin}/USD`,
       },
       tooltip: {
         padding: 10,
